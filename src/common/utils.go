@@ -28,7 +28,8 @@ func GenerateRandomDir() (string, error) {
 		return "", err
 	}
 
-	instanceDir := filepath.Join(defaultLocalDir, fmt.Sprintf("%s-%s", clientIdentifier, uuid.NewV4().String()))
+	myuuid, _ := uuid.NewV4()
+	instanceDir := filepath.Join(defaultLocalDir, fmt.Sprintf("%s-%s", clientIdentifier, myuuid))
 	if err := os.MkdirAll(instanceDir, 0700); err != nil {
 		log.Error("Failed to create dir", "dir", instanceDir, "err", err)
 		return "", err
