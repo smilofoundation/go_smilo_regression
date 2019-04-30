@@ -194,7 +194,7 @@ func (eth *ethereum) Start() error {
 		}
 	}()
 
-	exposedPorts := make(map[nat.Port]struct{})
+	exposedPorts := nat.PortSet{}
 	portBindings := nat.PortMap{}
 
 	if eth.rpcPort != "" {
@@ -362,7 +362,7 @@ func (eth *ethereum) NewClient() client.Client {
 
 func (eth *ethereum) NodeAddress() string {
 	if eth.node != nil {
-		return eth.node.String()
+		return (*eth.node).String()
 	}
 
 	return ""
