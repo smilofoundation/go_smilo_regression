@@ -8,7 +8,6 @@ import (
 )
 
 func TestEthereumContainer(t *testing.T) {
-	t.SkipNow()
 
 	dockerClient, err := client.NewEnvClient()
 	if err != nil {
@@ -17,7 +16,7 @@ func TestEthereumContainer(t *testing.T) {
 
 	geth := NewEthereum(
 		dockerClient,
-		ImageRepository("localhost:5000/go-smilo"),
+		ImageRepository("quay.io/smilo/go-smilo"),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),

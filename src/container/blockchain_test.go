@@ -6,7 +6,6 @@ import (
 )
 
 func TestEthereumBlockchain(t *testing.T) {
-	t.SkipNow()
 
 	dockerNetwork, err := NewDockerNetwork()
 	if err != nil {
@@ -17,7 +16,7 @@ func TestEthereumBlockchain(t *testing.T) {
 	chain := NewBlockchain(
 		dockerNetwork,
 		4,
-		ImageRepository("localhost:5000/go-smilo"),
+		ImageRepository("quay.io/smilo/go-smilo"),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),

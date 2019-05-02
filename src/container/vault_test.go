@@ -8,7 +8,6 @@ import (
 )
 
 func TestVaultContainer(t *testing.T) {
-	t.SkipNow()
 
 	dockerClient, err := client.NewEnvClient()
 	if err != nil {
@@ -29,7 +28,7 @@ func TestVaultContainer(t *testing.T) {
 	port := freeport.GetPort()
 
 	ct := NewVault(dockerClient,
-		CTImageRepository("localhost:5000/vault"),
+		CTImageRepository("quay.io/smilo/smilo-blackbox"),
 		CTImageTag("latest"),
 		CTHost(ip, port),
 		CTDockerNetworkName(dockerNetwork.Name()),
