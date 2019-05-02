@@ -65,7 +65,7 @@ func (c Vault) String() string {
 
 var vaultTemplate = `{{ .Name }}:
     hostname: {{ .Name }}
-    image: localhost:5000/vault:latest
+    image: quay.io/smilo/smilo-blackbox:latest
     ports:
       - '{{ .Port }}:{{ .Port }}'
     volumes:

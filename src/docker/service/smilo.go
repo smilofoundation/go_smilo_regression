@@ -36,7 +36,7 @@ func (q Smilo) String() string {
 
 var smiloTemplate = `{{ .Name }}:
     hostname: {{ .Name }}
-    image: localhost:5000/go-smilo:latest
+    image: quay.io/smilo/go-smilo:latest
     ports:
       - '{{ .Port }}:30303'
       - '{{ .RPCPort }}:8545'

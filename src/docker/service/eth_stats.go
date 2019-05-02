@@ -40,7 +40,7 @@ func (c EthStats) String() string {
 }
 
 var ethStatsTemplate = `eth-stats:
-    image: localhost:5000/ethstats:latest
+    image: quay.io/smilo/go-smilo:latest
     ports:
       - '3000:3000'
     environment:

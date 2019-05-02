@@ -46,7 +46,7 @@ var _ = Describe("Block synchronization testing", func() {
 			Expect(ok).To(BeTrue())
 
 			nodes, err = incubator.CreateNodes(numberOfNodes,
-				container.ImageRepository("localhost:5000/go-smilo"),
+				container.ImageRepository("quay.io/smilo/go-smilo"),
 				container.ImageTag("latest"),
 				container.DataDir("/data"),
 				container.WebSocket(),

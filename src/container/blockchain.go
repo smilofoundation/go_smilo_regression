@@ -70,7 +70,7 @@ func NewBlockchain(network *DockerNetwork, numOfFullnodes int, options ...Option
 func NewDefaultBlockchain(network *DockerNetwork, numOfFullnodes int) (bc *blockchain) {
 	return NewBlockchain(network,
 		numOfFullnodes,
-		ImageRepository("localhost:5000/go-smilo"),
+		ImageRepository("quay.io/smilo/go-smilo"),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),
@@ -111,10 +111,10 @@ func NewDefaultBlockchainWithFaulty(network *DockerNetwork, numOfNormal int, num
 		Logging(false)}
 	normalOpts := make([]Option, len(commonOpts), len(commonOpts)+2)
 	copy(normalOpts, commonOpts[:])
-	normalOpts = append(normalOpts, ImageRepository("localhost:5000/go-smilo"), ImageTag("latest"))
+	normalOpts = append(normalOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"))
 	faultyOpts := make([]Option, len(commonOpts), len(commonOpts)+3)
 	copy(faultyOpts, commonOpts[:])
-	faultyOpts = append(faultyOpts, ImageRepository("localhost:5000/go-smilo_faulty"), ImageTag("latest"), FaultyMode(1))
+	faultyOpts = append(faultyOpts, ImageRepository("quay.io/smilo/go-smilo_faulty"), ImageTag("latest"), FaultyMode(1))
 
 	// New env client
 	bc = &blockchain{dockerNetwork: network}
@@ -176,7 +176,7 @@ func NewSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork, options ...Opt
 func NewDefaultSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork) (bc *blockchain) {
 	return NewSmiloBlockchain(network,
 		ctn,
-		ImageRepository("localhost:5000/go-smilo"),
+		ImageRepository("quay.io/smilo/go-smilo"),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),
@@ -219,10 +219,10 @@ func NewDefaultSmiloBlockchainWithFaulty(network *DockerNetwork, ctn VaultNetwor
 	}
 	normalOpts := make([]Option, len(commonOpts), len(commonOpts)+2)
 	copy(normalOpts, commonOpts[:])
-	normalOpts = append(normalOpts, ImageRepository("localhost:5000/go-smilo"), ImageTag("latest"))
+	normalOpts = append(normalOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"))
 	faultyOpts := make([]Option, len(commonOpts), len(commonOpts)+3)
 	copy(faultyOpts, commonOpts[:])
-	faultyOpts = append(faultyOpts, ImageRepository("localhost:5000/go-smilo"), ImageTag("latest"), FaultyMode(1))
+	faultyOpts = append(faultyOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"), FaultyMode(1))
 
 	// New env client
 	bc = &blockchain{dockerNetwork: network, isSmilo: true, vaultNetwork: ctn}
@@ -573,7 +573,7 @@ func NewVaultNetwork(network *DockerNetwork, numOfFullnodes int, options ...Vaul
 
 func NewDefaultVaultNetwork(network *DockerNetwork, numOfFullnodes int) (ctn *vaultNetwork) {
 	return NewVaultNetwork(network, numOfFullnodes,
-		CTImageRepository("localhost:5000/vault"),
+		CTImageRepository("quay.io/smilo/go-smilo"),
 		CTImageTag("latest"),
 		CTWorkDir("/ctdata"),
 		CTLogging(false),
@@ -584,7 +584,7 @@ func NewDefaultVaultNetwork(network *DockerNetwork, numOfFullnodes int) (ctn *va
 }
 
 func (ctn *vaultNetwork) setupVaults(numOfFullnodes int) {
-	// Create vaults
+	// Create vaultsF
 	ips, ports := ctn.getFreeHosts(numOfFullnodes)
 	for i := 0; i < numOfFullnodes; i++ {
 		opts := append(ctn.opts, CTHost(ips[i], ports[i]))
