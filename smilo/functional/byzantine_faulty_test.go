@@ -30,7 +30,7 @@ var _ = Describe("QFS-05: Byzantine Faulty", func() {
 		})
 
 		AfterEach(func() {
-			Expect(blockchain.Stop(false)).To(BeNil())
+			Expect(blockchain.Stop(true)).To(BeNil())
 			blockchain.Finalize()
 			Expect(vaultNetwork.Stop()).To(BeNil())
 			vaultNetwork.Finalize()
@@ -74,7 +74,7 @@ var _ = Describe("QFS-05: Byzantine Faulty", func() {
 		})
 
 		AfterEach(func() {
-			Expect(blockchain.Stop(false)).To(BeNil())
+			Expect(blockchain.Stop(true)).To(BeNil())
 			blockchain.Finalize()
 			Expect(vaultNetwork.Stop()).To(BeNil())
 			vaultNetwork.Finalize()

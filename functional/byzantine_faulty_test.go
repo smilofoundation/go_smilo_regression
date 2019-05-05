@@ -32,7 +32,7 @@ var _ = Describe("TFS-05: Byzantine Faulty", func() {
 		})
 
 		AfterEach(func() {
-			Expect(blockchain.Stop(false)).To(BeNil())
+			Expect(blockchain.Stop(true)).To(BeNil())
 			blockchain.Finalize()
 		})
 
@@ -71,7 +71,7 @@ var _ = Describe("TFS-05: Byzantine Faulty", func() {
 		})
 
 		AfterEach(func() {
-			Expect(blockchain.Stop(false)).To(BeNil())
+			Expect(blockchain.Stop(true)).To(BeNil())
 			blockchain.Finalize()
 		})
 

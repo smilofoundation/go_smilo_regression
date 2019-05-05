@@ -30,7 +30,7 @@ var _ = Describe("TFS-07: Gossip Network", func() {
 	})
 
 	AfterEach(func() {
-		Expect(blockchain.Stop(false)).To(BeNil())
+		Expect(blockchain.Stop(true)).To(BeNil())
 		blockchain.Finalize()
 	})
 

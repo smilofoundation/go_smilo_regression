@@ -28,7 +28,7 @@ var _ = Describe("QFS-07: Gossip Network", func() {
 	})
 
 	AfterEach(func() {
-		blockchain.Stop(false)
+		blockchain.Stop(true)
 		blockchain.Finalize()
 		vaultNetwork.Stop()
 		vaultNetwork.Finalize()

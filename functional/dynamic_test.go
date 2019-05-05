@@ -32,7 +32,7 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 	})
 
 	AfterEach(func() {
-		Expect(blockchain.Stop(false)).To(BeNil())
+		Expect(blockchain.Stop(true)).To(BeNil())
 		blockchain.Finalize()
 	})
 

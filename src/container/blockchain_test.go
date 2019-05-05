@@ -36,7 +36,7 @@ func TestEthereumBlockchain(t *testing.T) {
 
 	time.Sleep(5 * time.Second)
 
-	err = chain.Stop(false)
+	err = chain.Stop(true)
 	if err != nil {
 		t.Error(err)
 	}
