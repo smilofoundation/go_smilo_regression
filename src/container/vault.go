@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -200,7 +201,7 @@ func (ct *vault) GenerateKey() (localWorkDir string, err error) {
 	config := &container.Config{
 		Image: ct.Image(),
 		Cmd: []string{
-			"--generatekeys=" + ct.keyPath(""),
+			"--generate-keys=" + ct.keyPath(""),
 		},
 	}
 	hostConfig := &container.HostConfig{
@@ -229,19 +230,36 @@ func (ct *vault) GenerateKey() (localWorkDir string, err error) {
 	// - write empty string password to container stdin
 	hiresp.Conn.Write([]byte("")) //Empty password
 
-	// Wait container
-	_, err1 := ct.client.ContainerWait(context.Background(), id, "")
-	if err1 != nil {
-		log.Error("Failed to wait container", "err", err1)
-		return "", err
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	waitC, _ := ct.client.ContainerWait(ctx, id, container.WaitConditionNotRunning)
+
+	if status := <-waitC; status.StatusCode != 0 {
+		//close(finished)
+		err1 := fmt.Errorf("a non-zero code from VAULT ContainerWait: %d", status.StatusCode)
+		logCancellationError(err1.Error())
+		return "", err1
+	}
+	log.Info("Managed to start VAULT container ", "id", id)
+
+	ctx1, cancel1 := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel1()
+
+	err = ct.client.ContainerKill(ctx1, id, "")
+	if err != nil {
+		log.Error("Failed to kill VAULT container", "err", err)
 	}
 
-	if ct.logging {
-		ct.showLog(context.Background())
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel2()
+
+	err = ct.client.ContainerRemove(ctx2, id, types.ContainerRemoveOptions{Force: true})
+	if err != nil {
+		log.Error("Failed to remove GETH container", "err", err)
 	}
 
-	// Stop container
-	return ct.localWorkDir, ct.client.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{Force: true})
+	return "", nil
 }
 
 func (ct *vault) Start() error {

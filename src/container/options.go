@@ -215,6 +215,13 @@ func RPCPort(port int) Option {
 	}
 }
 
+func RPCOrigin(origins string) Option {
+	return func(eth *ethereum) {
+		eth.flags = append(eth.flags, "--"+utils.RPCCORSDomainFlag.Name)
+		eth.flags = append(eth.flags, origins)
+	}
+}
+
 func WebSocket() Option {
 	return func(eth *ethereum) {
 		eth.flags = append(eth.flags, "--"+utils.WSEnabledFlag.Name)
@@ -275,6 +282,12 @@ func SyncMode(mode string) Option {
 func NoUSB() Option {
 	return func(eth *ethereum) {
 		eth.flags = append(eth.flags, "--"+utils.NoUSBFlag.Name)
+	}
+}
+
+func Testnet() Option {
+	return func(eth *ethereum) {
+		eth.flags = append(eth.flags, "--"+utils.TestnetFlag.Name)
 	}
 }
 

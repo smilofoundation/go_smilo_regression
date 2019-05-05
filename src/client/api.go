@@ -23,7 +23,7 @@ type Client interface {
 	CreateContract(ctx context.Context, from common.Address, bytecode string, gas *big.Int) (string, error)
 	CreatePrivateContract(ctx context.Context, from common.Address, bytecode string, gas *big.Int, privateFor []string) (string, error)
 	ProposeFullnode(ctx context.Context, address common.Address, auth bool) error
-	GetFullnodes(ctx context.Context, blockNumbers *big.Int) ([]common.Address, error)
+	GetFullnodes(ctx context.Context, blockNumber *big.Int) ([]common.Address, error)
 
 	// eth client
 	BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, error)

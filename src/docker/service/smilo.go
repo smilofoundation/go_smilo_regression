@@ -62,7 +62,7 @@ var smiloTemplate = `{{ .Name }}:
         --rpccorsdomain "*" \
         --datadir "/eth" \
         --port "30303" \
-        --rpcapi "db,eth,net,web3,sport,personal" \
+        --rpcapi "admin,db,eth,debug,miner,net,shh,txpool,personal,web3,smilobft,sport" \
         --networkid "2017" \
         --nat "any" \
         --nodekeyhex "{{ .NodeKey }}" \
@@ -71,7 +71,7 @@ var smiloTemplate = `{{ .Name }}:
         --metrics \
         --syncmode "full" \
         --ethstats "{{ .Name }}:{{ .EthStats }}" \
-        --gasprice 0
+        --miner.gasprice 0
     networks:
       app_net:
         ipv4_address: {{ .IP }}

@@ -51,7 +51,12 @@ var _ = Describe("QFS-01: General consensus", func() {
 			go func(geth container.Ethereum) {
 				// 1. Verify genesis block
 				c := geth.NewClient()
+				if c == nil {
+					errc <- errors.New("could not start client")
+					return
+				}
 				header, err := c.HeaderByNumber(context.Background(), big.NewInt(0))
+
 				if err != nil {
 					errc <- err
 					return
@@ -78,7 +83,9 @@ var _ = Describe("QFS-01: General consensus", func() {
 
 				// 2. Check fullnode set
 				istClient := geth.NewClient()
-				vals, err := istClient.GetFullnodes(context.Background(), big.NewInt(0))
+				n, err := istClient.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+				vals, err := istClient.GetFullnodes(context.Background(), n)
 				if err != nil {
 					errc <- err
 					return
@@ -109,7 +116,7 @@ var _ = Describe("QFS-01: General consensus", func() {
 		})
 
 		close(done)
-	}, 20)
+	}, 50)
 
 	It("QFS-01-04: Consensus progress", func(done Done) {
 		const (
@@ -183,7 +190,10 @@ var _ = Describe("QFS-01: General consensus", func() {
 					istClient := geth.NewClient()
 
 					// get initial fullnode set
-					vals, err := istClient.GetFullnodes(context.Background(), big.NewInt(0))
+					n, err := istClient.BlockNumber(context.Background())
+					Expect(err).Should(BeNil())
+
+					vals, err := istClient.GetFullnodes(context.Background(), n)
 					if err != nil {
 						errc <- err
 						return
@@ -233,7 +243,7 @@ var _ = Describe("QFS-01: General consensus", func() {
 					// check times to be proposer
 					for _, count := range counts {
 						if count != timesOfBeSpeaker {
-							errc <- errors.New("Wrong times to be proposer.")
+							errc <- errors.New("wrong times to be proposer.")
 							return
 						}
 					}

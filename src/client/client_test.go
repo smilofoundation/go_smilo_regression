@@ -44,7 +44,13 @@ func ExampleGetFullnodes() {
 		return
 	}
 
-	addrs, err := client.GetFullnodes(context.Background(), nil)
+	n, err := client.BlockNumber(context.Background())
+	if err != nil {
+		log.Error("Failed to get fullnodes, BlockNumber, ", "err", err)
+		return
+	}
+
+	addrs, err := client.GetFullnodes(context.Background(), n)
 	if err != nil {
 		log.Error("Failed to get fullnodes", "err", err)
 		return

@@ -78,7 +78,10 @@ var _ = Describe("TFS-01: General consensus", func() {
 
 				// 2. Check fullnode set
 				istClient := geth.NewClient()
-				vals, err := istClient.GetFullnodes(context.Background(), big.NewInt(0))
+				n, err := istClient.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+
+				vals, err := istClient.GetFullnodes(context.Background(), n)
 				if err != nil {
 					errc <- err
 					return
@@ -110,7 +113,7 @@ var _ = Describe("TFS-01: General consensus", func() {
 		})
 
 		close(done)
-	}, 20)
+	}, 50)
 
 	It("TFS-01-04: Consensus progress", func(done Done) {
 		const (
@@ -184,7 +187,9 @@ var _ = Describe("TFS-01: General consensus", func() {
 					istClient := geth.NewClient()
 
 					// get initial fullnode set
-					vals, err := istClient.GetFullnodes(context.Background(), big.NewInt(0))
+					n, err := istClient.BlockNumber(context.Background())
+					Expect(err).Should(BeNil())
+					vals, err := istClient.GetFullnodes(context.Background(), n)
 					if err != nil {
 						errc <- err
 						return

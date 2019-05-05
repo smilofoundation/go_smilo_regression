@@ -5,18 +5,18 @@ package genesis
 import (
 	"encoding/json"
 	"errors"
+	"go-smilo/src/blockchain/smilobft/core"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
-
-	"go-smilo/src/blockchain/smilobft/core"
 )
 
 var _ = (*genesisSpecMarshaling)(nil)
 
-func (q SmiloGenesis) MarshalJSON() ([]byte, error) {
+// MarshalJSON marshals as JSON.
+func (s SmiloGenesis) MarshalJSON() ([]byte, error) {
 	type SmiloGenesis struct {
 		Config     *SmiloChainConfig                                `json:"config"`
 		Nonce      math.HexOrDecimal64                              `json:"nonce"`
@@ -32,32 +32,33 @@ func (q SmiloGenesis) MarshalJSON() ([]byte, error) {
 		ParentHash common.Hash                                      `json:"parentHash"`
 	}
 	var enc SmiloGenesis
-	enc.Config = q.Config
-	enc.Nonce = math.HexOrDecimal64(q.Nonce)
-	enc.Timestamp = math.HexOrDecimal64(q.Timestamp)
-	enc.ExtraData = q.ExtraData
-	enc.GasLimit = math.HexOrDecimal64(q.GasLimit)
-	enc.Difficulty = (*math.HexOrDecimal256)(q.Difficulty)
-	enc.Mixhash = q.Mixhash
-	enc.Coinbase = q.Coinbase
-	if q.Alloc != nil {
-		enc.Alloc = make(map[common.UnprefixedAddress]core.GenesisAccount, len(q.Alloc))
-		for k, v := range q.Alloc {
+	enc.Config = s.Config
+	enc.Nonce = math.HexOrDecimal64(s.Nonce)
+	enc.Timestamp = math.HexOrDecimal64(s.Timestamp)
+	enc.ExtraData = s.ExtraData
+	enc.GasLimit = math.HexOrDecimal64(s.GasLimit)
+	enc.Difficulty = (*math.HexOrDecimal256)(s.Difficulty)
+	enc.Mixhash = s.Mixhash
+	enc.Coinbase = s.Coinbase
+	if s.Alloc != nil {
+		enc.Alloc = make(map[common.UnprefixedAddress]core.GenesisAccount, len(s.Alloc))
+		for k, v := range s.Alloc {
 			enc.Alloc[common.UnprefixedAddress(k)] = v
 		}
 	}
-	enc.Number = math.HexOrDecimal64(q.Number)
-	enc.GasUsed = math.HexOrDecimal64(q.GasUsed)
-	enc.ParentHash = q.ParentHash
+	enc.Number = math.HexOrDecimal64(s.Number)
+	enc.GasUsed = math.HexOrDecimal64(s.GasUsed)
+	enc.ParentHash = s.ParentHash
 	return json.Marshal(&enc)
 }
 
-func (q *SmiloGenesis) UnmarshalJSON(input []byte) error {
+// UnmarshalJSON unmarshals from JSON.
+func (s *SmiloGenesis) UnmarshalJSON(input []byte) error {
 	type SmiloGenesis struct {
 		Config     *SmiloChainConfig                                `json:"config"`
 		Nonce      *math.HexOrDecimal64                             `json:"nonce"`
 		Timestamp  *math.HexOrDecimal64                             `json:"timestamp"`
-		ExtraData  hexutil.Bytes                                    `json:"extraData"`
+		ExtraData  *hexutil.Bytes                                   `json:"extraData"`
 		GasLimit   *math.HexOrDecimal64                             `json:"gasLimit"   gencodec:"required"`
 		Difficulty *math.HexOrDecimal256                            `json:"difficulty" gencodec:"required"`
 		Mixhash    *common.Hash                                     `json:"mixHash"`
@@ -72,46 +73,46 @@ func (q *SmiloGenesis) UnmarshalJSON(input []byte) error {
 		return err
 	}
 	if dec.Config != nil {
-		q.Config = dec.Config
+		s.Config = dec.Config
 	}
 	if dec.Nonce != nil {
-		q.Nonce = uint64(*dec.Nonce)
+		s.Nonce = uint64(*dec.Nonce)
 	}
 	if dec.Timestamp != nil {
-		q.Timestamp = uint64(*dec.Timestamp)
+		s.Timestamp = uint64(*dec.Timestamp)
 	}
 	if dec.ExtraData != nil {
-		q.ExtraData = dec.ExtraData
+		s.ExtraData = *dec.ExtraData
 	}
 	if dec.GasLimit == nil {
 		return errors.New("missing required field 'gasLimit' for SmiloGenesis")
 	}
-	q.GasLimit = uint64(*dec.GasLimit)
+	s.GasLimit = uint64(*dec.GasLimit)
 	if dec.Difficulty == nil {
 		return errors.New("missing required field 'difficulty' for SmiloGenesis")
 	}
-	q.Difficulty = (*big.Int)(dec.Difficulty)
+	s.Difficulty = (*big.Int)(dec.Difficulty)
 	if dec.Mixhash != nil {
-		q.Mixhash = *dec.Mixhash
+		s.Mixhash = *dec.Mixhash
 	}
 	if dec.Coinbase != nil {
-		q.Coinbase = *dec.Coinbase
+		s.Coinbase = *dec.Coinbase
 	}
 	if dec.Alloc == nil {
 		return errors.New("missing required field 'alloc' for SmiloGenesis")
 	}
-	q.Alloc = make(core.GenesisAlloc, len(dec.Alloc))
+	s.Alloc = make(core.GenesisAlloc, len(dec.Alloc))
 	for k, v := range dec.Alloc {
-		q.Alloc[common.Address(k)] = v
+		s.Alloc[common.Address(k)] = v
 	}
 	if dec.Number != nil {
-		q.Number = uint64(*dec.Number)
+		s.Number = uint64(*dec.Number)
 	}
 	if dec.GasUsed != nil {
-		q.GasUsed = uint64(*dec.GasUsed)
+		s.GasUsed = uint64(*dec.GasUsed)
 	}
 	if dec.ParentHash != nil {
-		q.ParentHash = *dec.ParentHash
+		s.ParentHash = *dec.ParentHash
 	}
 	return nil
 }

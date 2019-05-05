@@ -70,7 +70,7 @@ var fullnodeTemplate = `{{ .Name }}:
         --rpccorsdomain "*" \
         --datadir "/eth" \
         --port "30303" \
-        --rpcapi "db,eth,net,web3,sport,personal" \
+        --rpcapi "db,eth,net,web3,smilobft,sport,personal" \
         --networkid "2017" \
         --nat "any" \
         --nodekeyhex "{{ .NodeKey }}" \
@@ -79,7 +79,7 @@ var fullnodeTemplate = `{{ .Name }}:
         --metrics \
         --syncmode "full" \
         --ethstats "{{ .Name }}:{{ .EthStats }}" \
-        --gasprice 0
+        --miner.gasprice 0
     networks:
       app_net:
         ipv4_address: {{ .IP }}

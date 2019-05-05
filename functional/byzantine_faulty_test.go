@@ -54,7 +54,7 @@ var _ = Describe("TFS-05: Byzantine Faulty", func() {
 			})
 
 			close(done)
-		}, 60)
+		}, 50)
 	})
 
 	Context("TFS-05-01: F+1 faulty fullnodes", func() {

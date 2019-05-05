@@ -42,11 +42,8 @@ func Fullnodes(addrs ...common.Address) Option {
 		}
 
 		extraData := "0x" + common.Bytes2Hex(append(newVanity, payload...))
-		if err != nil {
-			log.Error("Failed to encode extra data", "err", err)
-			return
-		}
 		genesis.ExtraData = hexutil.MustDecode(extraData)
+		genesis.GasLimit = InitGasLimit
 	}
 }
 

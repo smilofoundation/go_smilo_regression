@@ -75,16 +75,22 @@ func NewDefaultBlockchain(network *DockerNetwork, numOfFullnodes int) (bc *block
 		DataDir("/data"),
 		WebSocket(),
 		WebSocketAddress("0.0.0.0"),
-		WebSocketAPI("admin,eth,net,web3,personal,miner,smilo,sport"),
+		WebSocketAPI("personal,admin,db,eth,net,web3,miner,shh,txpool,debug,smilobft,sport"),
 		WebSocketOrigin("*"),
+		RPC(),
+		RPCAddress("0.0.0.0"),
+		RPCAPI("personal,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,smilobft,sport"),
+		RPCOrigin("*"),
 		NAT("any"),
 		NoDiscover(),
+		//Testnet(),
 		Etherbase("1a9afb711302c5f83b5902843d1c007a1a137632"),
 		Mine(),
 		SyncMode("full"),
 		Unlock(0),
 		Password("password.txt"),
-		Logging(false),
+		Logging(true),
+		IsSmilo(true),
 	)
 }
 
@@ -99,10 +105,15 @@ func NewDefaultBlockchainWithFaulty(network *DockerNetwork, numOfNormal int, num
 		DataDir("/data"),
 		WebSocket(),
 		WebSocketAddress("0.0.0.0"),
-		WebSocketAPI("admin,eth,net,web3,personal,miner,smilo,sport"),
+		WebSocketAPI("personal,admin,db,eth,net,web3,miner,shh,txpool,debug,smilobft,sport"),
 		WebSocketOrigin("*"),
+		RPC(),
+		RPCAddress("0.0.0.0"),
+		RPCAPI("personal,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,smilobft,sport"),
+		RPCOrigin("*"),
 		NAT("any"),
 		NoDiscover(),
+		//Testnet(),
 		Etherbase("1a9afb711302c5f83b5902843d1c007a1a137632"),
 		Mine(),
 		SyncMode("full"),
@@ -114,7 +125,7 @@ func NewDefaultBlockchainWithFaulty(network *DockerNetwork, numOfNormal int, num
 	normalOpts = append(normalOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"))
 	faultyOpts := make([]Option, len(commonOpts), len(commonOpts)+3)
 	copy(faultyOpts, commonOpts[:])
-	faultyOpts = append(faultyOpts, ImageRepository("quay.io/smilo/go-smilo_faulty"), ImageTag("latest"), FaultyMode(1))
+	faultyOpts = append(faultyOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"), FaultyMode(1))
 
 	// New env client
 	bc = &blockchain{dockerNetwork: network}
@@ -181,16 +192,22 @@ func NewDefaultSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork) (bc *bl
 		DataDir("/data"),
 		WebSocket(),
 		WebSocketAddress("0.0.0.0"),
-		WebSocketAPI("admin,eth,net,web3,personal,miner,smilo,sport"),
+		WebSocketAPI("personal,admin,db,eth,net,web3,miner,shh,txpool,debug,smilobft,sport"),
 		WebSocketOrigin("*"),
+		RPC(),
+		RPCAddress("0.0.0.0"),
+		RPCAPI("personal,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,smilobft,sport"),
+		RPCOrigin("*"),
 		NAT("any"),
 		NoDiscover(),
+		//Testnet(),
 		Etherbase("1a9afb711302c5f83b5902843d1c007a1a137632"),
 		Mine(),
 		SyncMode("full"),
 		Unlock(0),
 		Password("password.txt"),
 		Logging(false),
+		IsSmilo(true),
 	)
 }
 
@@ -205,10 +222,15 @@ func NewDefaultSmiloBlockchainWithFaulty(network *DockerNetwork, ctn VaultNetwor
 		DataDir("/data"),
 		WebSocket(),
 		WebSocketAddress("0.0.0.0"),
-		WebSocketAPI("admin,eth,net,web3,personal,miner,smilo,sport"),
+		WebSocketAPI("personal,admin,db,eth,net,web3,miner,shh,txpool,debug,smilobft,sport"),
 		WebSocketOrigin("*"),
+		RPC(),
+		RPCAddress("0.0.0.0"),
+		RPCAPI("personal,admin,db,eth,debug,miner,net,shh,txpool,personal,web3,smilobft,sport"),
+		RPCOrigin("*"),
 		NAT("any"),
 		NoDiscover(),
+		//Testnet(),
 		Etherbase("1a9afb711302c5f83b5902843d1c007a1a137632"),
 		Mine(),
 		SyncMode("full"),
@@ -572,8 +594,9 @@ func NewVaultNetwork(network *DockerNetwork, numOfFullnodes int, options ...Vaul
 }
 
 func NewDefaultVaultNetwork(network *DockerNetwork, numOfFullnodes int) (ctn *vaultNetwork) {
+
 	return NewVaultNetwork(network, numOfFullnodes,
-		CTImageRepository("quay.io/smilo/go-smilo"),
+		CTImageRepository("quay.io/smilo/smilo-blackbox"),
 		CTImageTag("latest"),
 		CTWorkDir("/ctdata"),
 		CTLogging(false),

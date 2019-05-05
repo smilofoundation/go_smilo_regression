@@ -87,7 +87,7 @@ var _ = Describe("Block synchronization testing", func() {
 			})
 
 			close(done)
-		}, 15)
+		}, 50)
 
 		It("TFS-06-02: Node synchronization", func(done Done) {
 			const targetBlockHeight = 10
@@ -147,6 +147,6 @@ var _ = Describe("Block synchronization testing", func() {
 			})
 
 			close(done)
-		}, 30)
+		}, 50)
 	})
 })

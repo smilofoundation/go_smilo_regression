@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -21,7 +23,6 @@ import (
 	docker "github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 
 	"go-smilo/src/blockchain/smilobft/cmd/utils"
 	ethtypes "go-smilo/src/blockchain/smilobft/core/types"
@@ -33,7 +34,7 @@ import (
 )
 
 const (
-	healthCheckRetryCount = 30
+	healthCheckRetryCount = 60
 	healthCheckRetryDelay = 2 * time.Second
 )
 
@@ -137,6 +138,8 @@ type ethereum struct {
 	dockerClient *docker.Client
 }
 
+var errCancelled = errors.New("build cancelled")
+
 func (eth *ethereum) Init(genesisFile string) error {
 	if err := istcommon.SaveNodeKey(eth.key, eth.dataDir); err != nil {
 		return err
@@ -171,20 +174,45 @@ func (eth *ethereum) Init(genesisFile string) error {
 
 	if err := eth.dockerClient.ContainerStart(context.Background(), id, types.ContainerStartOptions{}); err != nil {
 		log.Error("Failed to start container", "err", err)
-		return err
 	}
 
-	_, err1 := eth.dockerClient.ContainerWait(context.Background(), id, "")
-	if err1 != nil {
-		log.Error("Failed to wait container", "err", err1)
-		return nil
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 
 	if eth.logging {
 		eth.showLog(context.Background())
 	}
 
-	return eth.dockerClient.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{Force: true})
+	waitC, _ := eth.dockerClient.ContainerWait(ctx, id, container.WaitConditionNotRunning)
+	if status := <-waitC; status.StatusCode != 0 {
+		//close(finished)
+		err1 := fmt.Errorf("a non-zero code from GETH ContainerWait: %d", status.StatusCode)
+		logCancellationError(err1.Error())
+		return err1
+	}
+	log.Info("Managed to start GETH container ", "id", id)
+
+	ctx1, cancel1 := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel1()
+
+	err = eth.dockerClient.ContainerKill(ctx1, id, "")
+	if err != nil {
+		log.Error("Failed to kill GETH container", "err", err)
+	}
+
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel2()
+
+	err = eth.dockerClient.ContainerRemove(ctx2, id, types.ContainerRemoveOptions{Force: true})
+	if err != nil {
+		log.Error("Failed to remove GETH container", "err", err)
+	}
+
+	return nil
+}
+
+func logCancellationError(msg string) {
+	log.Debug(fmt.Sprintf("Build cancelled %s", msg))
 }
 
 func (eth *ethereum) Start() error {
@@ -219,7 +247,7 @@ func (eth *ethereum) Start() error {
 		}
 	}
 
-	binds := []string{}
+	var binds []string
 	binds = append(binds, eth.dockerBinds...)
 	if eth.dataDir != "" {
 		binds = append(binds, eth.dataDir+":"+utils.DataDirFlag.Value.Value)
@@ -280,7 +308,7 @@ func (eth *ethereum) Start() error {
 	}
 
 	if !eth.ok {
-		return errors.New("Failed to start geth")
+		return errors.New("failed to start geth")
 	}
 
 	containerIP := eth.ip
@@ -305,10 +333,11 @@ func (eth *ethereum) Start() error {
 }
 
 func (eth *ethereum) Stop() error {
-	err := eth.dockerClient.ContainerStop(context.Background(), eth.containerID, nil)
+	duration := time.Duration(30 * time.Second)
+	err := eth.dockerClient.ContainerStop(context.Background(), eth.containerID, &duration)
 	if err != nil {
-		log.Error("Failed to stop container", "err", err)
-		return err
+		log.Error("Failed to stop GETH container", "err", err)
+		//return err
 	}
 
 	defer os.RemoveAll(eth.dataDir)
@@ -353,11 +382,11 @@ func (eth *ethereum) NewClient() client.Client {
 		scheme = "ws://"
 		port = eth.wsPort
 	}
-	client, err := client.Dial(scheme + eth.Host() + ":" + port)
+	cli, err := client.Dial(scheme + eth.Host() + ":" + port)
 	if err != nil {
 		return nil
 	}
-	return client
+	return cli
 }
 
 func (eth *ethereum) NodeAddress() string {
@@ -425,7 +454,10 @@ func (eth *ethereum) WaitForProposed(expectedAddress common.Address, timeout tim
 
 	subCh := make(chan *ethtypes.Header)
 
-	sub, err := cli.SubscribeNewHead(context.Background(), subCh)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	sub, err := cli.SubscribeNewHead(ctx, subCh)
 	if err != nil {
 		return err
 	}
@@ -448,16 +480,16 @@ func (eth *ethereum) WaitForProposed(expectedAddress common.Address, timeout tim
 }
 
 func (eth *ethereum) WaitForPeersConnected(expectedPeercount int) error {
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
-	defer client.Close()
+	defer cli.Close()
 
 	ticker := time.NewTicker(time.Second * 1)
 	defer ticker.Stop()
 	for range ticker.C {
-		infos, err := client.AdminPeers(context.Background())
+		infos, err := cli.AdminPeers(context.Background())
 		if err != nil {
 			return err
 		}
@@ -474,11 +506,11 @@ func (eth *ethereum) WaitForPeersConnected(expectedPeercount int) error {
 func (eth *ethereum) WaitForBlocks(num int, waitingTime ...time.Duration) error {
 	var first *big.Int
 
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
-	defer client.Close()
+	defer cli.Close()
 
 	var t time.Duration
 	if len(waitingTime) > 0 {
@@ -496,7 +528,7 @@ func (eth *ethereum) WaitForBlocks(num int, waitingTime ...time.Duration) error 
 			ticker.Stop()
 			return ErrNoBlock
 		case <-ticker.C:
-			n, err := client.BlockNumber(context.Background())
+			n, err := cli.BlockNumber(context.Background())
 			if err != nil {
 				return err
 			}
@@ -513,16 +545,16 @@ func (eth *ethereum) WaitForBlocks(num int, waitingTime ...time.Duration) error 
 }
 
 func (eth *ethereum) WaitForBlockHeight(num int) error {
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
-	defer client.Close()
+	defer cli.Close()
 
 	ticker := time.NewTicker(time.Millisecond * 500)
 	defer ticker.Stop()
 	for range ticker.C {
-		n, err := client.BlockNumber(context.Background())
+		n, err := cli.BlockNumber(context.Background())
 		if err != nil {
 			return err
 		}
@@ -537,8 +569,8 @@ func (eth *ethereum) WaitForBlockHeight(num int) error {
 func (eth *ethereum) WaitForNoBlocks(num int, duration time.Duration) error {
 	var first *big.Int
 
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
 
@@ -550,7 +582,7 @@ func (eth *ethereum) WaitForNoBlocks(num int, duration time.Duration) error {
 		case <-timeout:
 			return nil
 		case <-ticker.C:
-			n, err := client.BlockNumber(context.Background())
+			n, err := cli.BlockNumber(context.Background())
 			if err != nil {
 				return err
 			}
@@ -567,8 +599,8 @@ func (eth *ethereum) WaitForNoBlocks(num int, duration time.Duration) error {
 }
 
 func (eth *ethereum) WaitForBalances(addrs []common.Address, duration ...time.Duration) error {
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
 
@@ -588,7 +620,7 @@ func (eth *ethereum) WaitForBalances(addrs []common.Address, duration ...time.Du
 			case <-timeout:
 				return ErrTimeout
 			case <-ticker.C:
-				n, err := client.BalanceAt(context.Background(), addr, nil)
+				n, err := cli.BalanceAt(context.Background(), addr, nil)
 				if err != nil {
 					return err
 				}
@@ -628,33 +660,33 @@ func (eth *ethereum) WaitForBalances(addrs []common.Address, duration ...time.Du
 // ----------------------------------------------------------------------------
 
 func (eth *ethereum) AddPeer(address string) error {
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
-	defer client.Close()
+	defer cli.Close()
 
-	return client.AddPeer(context.Background(), address)
+	return cli.AddPeer(context.Background(), address)
 }
 
 func (eth *ethereum) StartMining() error {
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
-	defer client.Close()
+	defer cli.Close()
 
-	return client.StartMining(context.Background())
+	return cli.StartMining(context.Background())
 }
 
 func (eth *ethereum) StopMining() error {
-	client := eth.NewClient()
-	if client == nil {
+	cli := eth.NewClient()
+	if cli == nil {
 		return errors.New("failed to retrieve client")
 	}
-	defer client.Close()
+	defer cli.Close()
 
-	return client.StopMining(context.Background())
+	return cli.StopMining(context.Background())
 }
 
 func (eth *ethereum) Accounts() []common.Address {

@@ -57,7 +57,7 @@ var _ = Describe("QFS-08: Private transaction", func() {
 			acc := geth0.Accounts()[0]
 			client0 := geth0.NewClient()
 			byteCode := genByteCodeWithValue(storedValue)
-			hash, err := client0.CreateContract(context.Background(), acc, byteCode, big.NewInt(300000))
+			hash, err := client0.CreateContract(context.Background(), acc, byteCode, big.NewInt(0x47b760))
 			Expect(err).To(BeNil())
 			txHash = common.HexToHash(hash)
 		})
@@ -90,7 +90,7 @@ var _ = Describe("QFS-08: Private transaction", func() {
 			ct1 := vaultNetwork.GetVault(1)
 			pubKey1 := ct1.PublicKeys()
 			byteCode := genByteCodeWithValue(storedValue)
-			hash, err := client0.CreatePrivateContract(context.Background(), acc, byteCode, big.NewInt(300000), pubKey1)
+			hash, err := client0.CreatePrivateContract(context.Background(), acc, byteCode, big.NewInt(0x47b760), pubKey1)
 			Expect(err).To(BeNil())
 			txHash = common.HexToHash(hash)
 		})
@@ -99,6 +99,7 @@ var _ = Describe("QFS-08: Private transaction", func() {
 			errc := make(chan error, len(blockchain.Fullnodes()))
 			for i, geth := range blockchain.Fullnodes() {
 				var expValue = 0
+				//TODO: get nodes by pub and make sure the target node has/not the info before checkContractValue
 				if i == 0 || i == 1 {
 					expValue = storedValue
 				}
@@ -121,7 +122,7 @@ var _ = Describe("QFS-08: Private transaction", func() {
 			ct3 := vaultNetwork.GetVault(3)
 			pubKey3 := ct3.PublicKeys()
 			byteCode := genByteCodeWithValue(storedValue)
-			hash, err := client2.CreatePrivateContract(context.Background(), acc, byteCode, big.NewInt(300000), pubKey3)
+			hash, err := client2.CreatePrivateContract(context.Background(), acc, byteCode, big.NewInt(0x47b760), pubKey3)
 			Expect(err).To(BeNil())
 			txHash = common.HexToHash(hash)
 		})
@@ -150,7 +151,7 @@ var _ = Describe("QFS-08: Private transaction", func() {
 			acc := geth0.Accounts()[0]
 			client0 := geth0.NewClient()
 			byteCode := genByteCodeWithValue(storedValue)
-			hash, err := client0.CreateContract(context.Background(), acc, byteCode, big.NewInt(300000))
+			hash, err := client0.CreateContract(context.Background(), acc, byteCode, big.NewInt(0x47b760))
 			Expect(err).To(BeNil())
 			txHash = common.HexToHash(hash)
 		})
@@ -200,7 +201,7 @@ func checkContractValue(ethClient client.Client, txHash common.Hash, expValue in
 
 	emptyAddress := common.Address{}
 	if receipt.ContractAddress == emptyAddress {
-		return errors.New("Invalid contract address.")
+		return errors.New("invalid contract address")
 	}
 
 	v, err := ethClient.StorageAt(context.Background(),
@@ -212,7 +213,7 @@ func checkContractValue(ethClient client.Client, txHash common.Hash, expValue in
 	}
 
 	if value := new(big.Int).SetBytes(v).Int64(); value != int64(expValue) {
-		errMsg := fmt.Sprintf("Wrong value of contract storage, get:%v, want:%v", value, expValue)
+		errMsg := fmt.Sprintf("Wrong value of contract storage, got:%v, expected:%v", value, expValue)
 		return errors.New(errMsg)
 	}
 	return nil

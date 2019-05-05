@@ -42,7 +42,10 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 		By("Ensure the number of fullnodes is correct", func() {
 			for _, v := range blockchain.Fullnodes() {
 				client := v.NewClient()
-				fullnodes, err := client.GetFullnodes(context.Background(), nil)
+				n, err := client.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+
+				fullnodes, err := client.GetFullnodes(context.Background(), n)
 				Expect(err).Should(BeNil())
 				Expect(len(fullnodes)).Should(BeNumerically("==", numberOfFullnodes))
 			}
@@ -63,7 +66,9 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 		By("Ensure the number of fullnodes is correct", func() {
 			for _, v := range blockchain.Fullnodes() {
 				client := v.NewClient()
-				fullnodes, err := client.GetFullnodes(context.Background(), nil)
+				n, err := client.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+				fullnodes, err := client.GetFullnodes(context.Background(), n)
 				Expect(err).Should(BeNil())
 				Expect(len(fullnodes)).Should(BeNumerically("==", numberOfFullnodes+testFullnodes))
 			}
@@ -88,7 +93,10 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 		By("Ensure that numbers of fullnode is equal to $numberOfFullnodes", func() {
 			for _, v := range blockchain.Fullnodes() {
 				client := v.NewClient()
-				fullnodes, err := client.GetFullnodes(context.Background(), nil)
+				n, err := client.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+
+				fullnodes, err := client.GetFullnodes(context.Background(), n)
 				Expect(err).Should(BeNil())
 				Expect(len(fullnodes)).Should(BeNumerically("==", numberOfFullnodes))
 			}
@@ -106,7 +114,10 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 		By("Check if the number of fullnodes is correct", func() {
 			for _, v := range blockchain.Fullnodes() {
 				client := v.NewClient()
-				fullnodes, err := client.GetFullnodes(context.Background(), nil)
+				n, err := client.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+
+				fullnodes, err := client.GetFullnodes(context.Background(), n)
 				Expect(err).Should(BeNil())
 				Expect(len(fullnodes)).Should(BeNumerically("==", numberOfFullnodes+numOfCandidates))
 			}
@@ -126,7 +137,10 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 		By("Check if the number of fullnodes is correct", func() {
 			for _, v := range blockchain.Fullnodes() {
 				client := v.NewClient()
-				fullnodes, err := client.GetFullnodes(context.Background(), nil)
+				n, err := client.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+
+				fullnodes, err := client.GetFullnodes(context.Background(), n)
 				Expect(err).Should(BeNil())
 				Expect(len(fullnodes)).Should(BeNumerically("==", numberOfFullnodes))
 			}
@@ -157,7 +171,10 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 		By("Verify number of fullnodes", func() {
 			for _, v := range blockchain.Fullnodes() {
 				client := v.NewClient()
-				fullnodes, err := client.GetFullnodes(context.Background(), nil)
+				n, err := client.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+
+				fullnodes, err := client.GetFullnodes(context.Background(), n)
 				Expect(err).Should(BeNil())
 				Expect(len(fullnodes)).Should(BeNumerically("==", numberOfFullnodes))
 			}
@@ -191,7 +208,10 @@ var _ = Describe("TFS-02: Dynamic fullnodes addition/removal testing", func() {
 		By("Verify number of fullnodes", func() {
 			for _, v := range blockchain.Fullnodes() {
 				client := v.NewClient()
-				fullnodes, err := client.GetFullnodes(context.Background(), nil)
+				n, err := client.BlockNumber(context.Background())
+				Expect(err).Should(BeNil())
+
+				fullnodes, err := client.GetFullnodes(context.Background(), n)
 				Expect(err).Should(BeNil())
 				Expect(len(fullnodes)).Should(BeNumerically("==", numberOfFullnodes))
 			}

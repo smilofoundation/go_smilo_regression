@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"sort"
 	"strings"
@@ -21,18 +22,18 @@ type client struct {
 }
 
 func Dial(rawurl string) (Client, error) {
-	c, err := rpc.Dial(rawurl)
+	ic, err := rpc.Dial(rawurl)
 	if err != nil {
 		return nil, err
 	}
 	return &client{
-		c:         c,
-		ethClient: ethclient.NewClient(c),
+		c:         ic,
+		ethClient: ethclient.NewClient(ic),
 	}, nil
 }
 
-func (c *client) Close() {
-	c.c.Close()
+func (ic *client) Close() {
+	ic.c.Close()
 }
 
 // ----------------------------------------------------------------------------
@@ -117,9 +118,10 @@ func (ic *client) SendTransaction(ctx context.Context, from, to common.Address, 
 func (ic *client) CreateContract(ctx context.Context, from common.Address, bytecode string, gas *big.Int) (txHash string, err error) {
 	var hex hexutil.Bytes
 	arg := map[string]interface{}{
-		"from": from,
-		"gas":  (*hexutil.Big)(gas),
-		"data": bytecode,
+		"from":     from,
+		"gas":      (*hexutil.Big)(gas),
+		"data":     bytecode,
+		"gasPrice": (*hexutil.Big)(big.NewInt(0)),
 	}
 	if err = ic.c.CallContext(ctx, &hex, "eth_sendTransaction", arg); err == nil {
 		txHash = hex.String()
@@ -134,6 +136,7 @@ func (ic *client) CreatePrivateContract(ctx context.Context, from common.Address
 		"gas":        (*hexutil.Big)(gas),
 		"data":       bytecode,
 		"privateFor": privateFor,
+		"gasPrice":   (*hexutil.Big)(big.NewInt(0)),
 	}
 	if err = ic.c.CallContext(ctx, &hex, "eth_sendTransaction", arg); err == nil {
 		txHash = hex.String()
@@ -147,8 +150,9 @@ func (ic *client) ProposeFullnode(ctx context.Context, address common.Address, a
 	var r []byte
 	// TODO: Result needs to be verified with other method
 	// The response data type are bytes, but we cannot parse...
-	err := ic.c.CallContext(ctx, &r, "sport_propose", address, auth)
+	err := ic.c.CallContext(ctx, &r, "smilobft_propose", address, auth)
 	if err != nil {
+		fmt.Println("ERROR: test_client, Could not smilobft_propose", err)
 		return ethereum.NotFound
 	}
 	return err
@@ -168,10 +172,11 @@ func (addrs addresses) Swap(i, j int) {
 	addrs[i], addrs[j] = addrs[j], addrs[i]
 }
 
-func (ic *client) GetFullnodes(ctx context.Context, blockNumbers *big.Int) ([]common.Address, error) {
+func (ic *client) GetFullnodes(ctx context.Context, blockNumber *big.Int) ([]common.Address, error) {
 	var r []common.Address
-	err := ic.c.CallContext(ctx, &r, "sport_getFullnodes", toNumArg(blockNumbers))
+	err := ic.c.CallContext(ctx, &r, "smilobft_getFullnodes", toNumArg(blockNumber))
 	if err == nil && r == nil {
+		fmt.Println("ERROR: test_client, Could not smilobft_getFullnodes", err)
 		return nil, ethereum.NotFound
 	}
 
@@ -182,7 +187,7 @@ func (ic *client) GetFullnodes(ctx context.Context, blockNumbers *big.Int) ([]co
 
 func toNumArg(number *big.Int) string {
 	if number == nil {
-		return "latest"
+		return ""
 	}
 	return hexutil.EncodeBig(number)
 }

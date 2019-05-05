@@ -2,6 +2,7 @@ package genesis
 
 import (
 	"encoding/json"
+	"github.com/flynn/flynn/build/_go.d8625e472d70f10b454a5a6185a5fb04fb39cb60a2c1f5756ae991aa874de58e/src/fmt"
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
@@ -73,6 +74,9 @@ func Save(dataDir string, genesis *core.Genesis, isSmilo bool) error {
 	} else {
 		raw, err = json.Marshal(genesis)
 	}
+
+	fmt.Println("genesis.go, Genesis", string(raw))
+
 	if err != nil {
 		return err
 	}

@@ -27,7 +27,9 @@ type genesisSpecMarshaling struct {
 
 type SmiloChainConfig struct {
 	*params.ChainConfig
-	IsSmilo bool `json:"isSmilo,omitempty"`
+	IsSmilo       bool `json:"isSmilo,omitempty"`
+	IsGas         bool `json:"isGas,omitempty"`
+	IsGasRefunded bool `json:"isGasRefunded,omitempty"`
 }
 
 type SmiloGenesis struct {
@@ -52,8 +54,10 @@ type SmiloGenesis struct {
 func ToSmilo(g *core.Genesis, isSmilo bool) *SmiloGenesis {
 	return &SmiloGenesis{
 		Config: &SmiloChainConfig{
-			ChainConfig: g.Config,
-			IsSmilo:     isSmilo,
+			ChainConfig:   g.Config,
+			IsSmilo:       isSmilo,
+			IsGas:         isSmilo,
+			IsGasRefunded: isSmilo,
 		},
 		Nonce:      g.Nonce,
 		Timestamp:  g.Timestamp,
@@ -63,8 +67,8 @@ func ToSmilo(g *core.Genesis, isSmilo bool) *SmiloGenesis {
 		Mixhash:    g.Mixhash,
 		Coinbase:   g.Coinbase,
 		Alloc:      g.Alloc,
-		Number:     g.Number,
-		GasUsed:    g.GasUsed,
+		//Number:     g.Number,
+		//GasUsed:    g.GasUsed,
 		ParentHash: g.ParentHash,
 	}
 }

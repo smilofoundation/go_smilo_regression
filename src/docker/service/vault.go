@@ -77,7 +77,7 @@ var vaultTemplate = `{{ .Name }}:
       - |
         mkdir -p {{ .Folder }}
         echo "socket=\"{{ .SocketPath }}\"\npublickeys=[\"{{ .PublicKey }}\"]\n" > {{ .ConfigPath }}
-        vault-node --generatekeys={{ .KeyPath }}
+        blackbox --generate-keys={{ .KeyPath }}
         cp {{ .KeyPath }}.pub /tmp/tm{{ .Identity }}.pub
         vault-node \
           --url={{ .Host }} \
