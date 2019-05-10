@@ -80,14 +80,13 @@ var vaultTemplate = `{{ .Name }}:
         blackbox --generate-keys={{ .KeyPath }}
         cp {{ .KeyPath }}.pub /tmp/tm{{ .Identity }}.pub
         vault-node \
-          --url={{ .Host }} \
+          --hostname={{ .Host }} \
           --port={{ .Port }} \
           --socket={{ .SocketPath }} \
           --othernodes={{ .OtherNodes }} \
           --publickeys={{ .PublicKey }} \
           --privatekeys={{ .PrivateKey }} \
           --storage={{ .Folder }} \
-          --verbosity=4
     networks:
       app_net:
         ipv4_address: {{ .IP }}

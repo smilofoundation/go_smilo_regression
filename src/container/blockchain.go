@@ -602,7 +602,7 @@ func NewDefaultVaultNetwork(network *DockerNetwork, numOfFullnodes int) (ctn *va
 		CTLogging(false),
 		CTKeyName("node"),
 		CTSocketFilename("node.ipc"),
-		CTVerbosity(1),
+		//CTVerbosity(1),
 	)
 }
 

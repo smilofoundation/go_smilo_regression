@@ -44,7 +44,7 @@ func CTHost(ip net.IP, port int) VaultOption {
 		ct.port = fmt.Sprintf("%d", port)
 		ct.ip = ip.String()
 		ct.flags = append(ct.flags, fmt.Sprintf("--port=%d", port))
-		ct.flags = append(ct.flags, fmt.Sprintf("--url=%s", ct.Host()))
+		ct.flags = append(ct.flags, fmt.Sprintf("--hostname=%s", ct.Host()))
 	}
 }
 
@@ -79,12 +79,6 @@ func CTSocketFilename(socketFilename string) VaultOption {
 	return func(ct *vault) {
 		ct.socketFilename = socketFilename
 		ct.flags = append(ct.flags, fmt.Sprintf("--socket=%s", filepath.Join(ct.workDir, socketFilename)))
-	}
-}
-
-func CTVerbosity(verbosity int) VaultOption {
-	return func(ct *vault) {
-		ct.flags = append(ct.flags, fmt.Sprintf("--verbosity=%d", verbosity))
 	}
 }
 
