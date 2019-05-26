@@ -16,7 +16,7 @@ func TestEthereumContainer(t *testing.T) {
 
 	geth := NewEthereum(
 		dockerClient,
-		ImageRepository("quay.io/smilo/go-smilo"),
+		ImageRepository(GetGoSmiloImage()),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),

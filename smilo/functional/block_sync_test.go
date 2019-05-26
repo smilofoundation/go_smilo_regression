@@ -19,12 +19,17 @@ var _ = Describe("Block synchronization testing", func() {
 	var (
 		vaultNetwork container.VaultNetwork
 		blockchain   container.Blockchain
+		err          error
 	)
 
 	BeforeEach(func() {
-		vaultNetwork = container.NewDefaultVaultNetwork(dockerNetwork, numberOfFullnodes)
+		vaultNetwork, err = container.NewDefaultVaultNetwork(dockerNetwork, numberOfFullnodes)
+		Expect(err).To(BeNil())
+		Expect(vaultNetwork).ToNot(BeNil())
 		Expect(vaultNetwork.Start()).To(BeNil())
-		blockchain = container.NewDefaultSmiloBlockchain(dockerNetwork, vaultNetwork)
+		blockchain, err = container.NewDefaultSmiloBlockchain(dockerNetwork, vaultNetwork)
+		Expect(err).To(BeNil())
+		Expect(blockchain).ToNot(BeNil())
 		Expect(blockchain.Start(true)).To(BeNil())
 	})
 
@@ -46,7 +51,7 @@ var _ = Describe("Block synchronization testing", func() {
 			Expect(ok).To(BeTrue())
 
 			nodes, err = incubator.CreateNodes(numberOfNodes,
-				container.ImageRepository("quay.io/smilo/go-smilo"),
+				container.ImageRepository(container.GetGoSmiloImage()),
 				container.ImageTag("latest"),
 				container.DataDir("/data"),
 				container.WebSocket(),

@@ -13,10 +13,10 @@ func TestEthereumBlockchain(t *testing.T) {
 	}
 	defer dockerNetwork.Remove()
 
-	chain := NewBlockchain(
+	chain, err := NewBlockchain(
 		dockerNetwork,
 		4,
-		ImageRepository("quay.io/smilo/go-smilo"),
+		ImageRepository(GetGoSmiloImage()),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),
@@ -27,6 +27,11 @@ func TestEthereumBlockchain(t *testing.T) {
 		Password("password.txt"),
 		Logging(false),
 	)
+	if err != nil {
+		t.Error("Unable to create blockchain", err)
+		t.Fail()
+		return
+	}
 	defer chain.Finalize()
 
 	err = chain.Start(true)

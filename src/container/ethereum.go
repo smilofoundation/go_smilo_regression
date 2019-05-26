@@ -340,7 +340,7 @@ func (eth *ethereum) Stop() error {
 		//return err
 	}
 
-	defer os.RemoveAll(eth.dataDir)
+	//defer os.RemoveAll(eth.dataDir)
 
 	return eth.dockerClient.ContainerRemove(context.Background(), eth.containerID,
 		types.ContainerRemoveOptions{

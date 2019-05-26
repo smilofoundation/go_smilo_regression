@@ -28,15 +28,15 @@ func TestVaultContainer(t *testing.T) {
 	port := freeport.GetPort()
 
 	ct := NewVault(dockerClient,
-		CTImageRepository("quay.io/smilo/smilo-blackbox"),
-		CTImageTag("latest"),
+		CTImageRepository(GetVaultImage()),
+		CTImageTag("return_code"),
 		CTHost(ip, port),
 		CTDockerNetworkName(dockerNetwork.Name()),
 		CTWorkDir("/data"),
 		CTLogging(false),
 		CTKeyName("node"),
 		CTSocketFilename("node.ipc"),
-		CTVerbosity(3),
+		//CTVerbosity(3),
 	)
 
 	_, err = ct.GenerateKey()

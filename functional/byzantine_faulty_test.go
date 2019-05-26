@@ -27,7 +27,9 @@ var _ = Describe("TFS-05: Byzantine Faulty", func() {
 			blockchain container.Blockchain
 		)
 		BeforeEach(func() {
-			blockchain = container.NewDefaultBlockchainWithFaulty(dockerNetwork, numberOfNormal, numberOfFaulty)
+			blockchain, err := container.NewDefaultBlockchainWithFaulty(dockerNetwork, numberOfNormal, numberOfFaulty)
+			Expect(err).To(BeNil())
+			Expect(blockchain).ToNot(BeNil())
 			Expect(blockchain.Start(true)).To(BeNil())
 		})
 
@@ -66,7 +68,9 @@ var _ = Describe("TFS-05: Byzantine Faulty", func() {
 			blockchain container.Blockchain
 		)
 		BeforeEach(func() {
-			blockchain = container.NewDefaultBlockchainWithFaulty(dockerNetwork, numberOfNormal, numberOfFaulty)
+			blockchain, err := container.NewDefaultBlockchainWithFaulty(dockerNetwork, numberOfNormal, numberOfFaulty)
+			Expect(err).To(BeNil())
+			Expect(blockchain).ToNot(BeNil())
 			Expect(blockchain.Start(true)).To(BeNil())
 		})
 
