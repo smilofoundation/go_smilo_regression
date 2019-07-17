@@ -147,7 +147,7 @@ var _ = Describe("QFS-01: General consensus", func() {
 							return
 						}
 						if lastBlockTime != 0 {
-							diff := header.Time.Int64() - lastBlockTime
+							diff := int64(header.Time) - lastBlockTime
 							if diff > maxBlockPeriod {
 								errStr := fmt.Sprintf("Invaild block(%v) period, want:%v, got:%v", header.Number.Int64(), maxBlockPeriod, diff)
 								errc <- errors.New(errStr)
