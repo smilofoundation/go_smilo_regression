@@ -32,7 +32,7 @@ func Fullnodes(addrs ...common.Address) Option {
 
 		ist := &types.SportExtra{
 			Fullnodes:     addrs,
-			Seal:          make([]byte, types.SportExtraSeal),
+			Seal:          make([]byte, types.BFTExtraSeal),
 			CommittedSeal: [][]byte{},
 		}
 
