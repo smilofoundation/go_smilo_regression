@@ -1,3 +1,21 @@
+// Copyright 2020 smilofoundation/regression Authors
+// Copyright 2019 smilofoundation/regression Authors
+// Copyright 2017 AMIS Technologies
+// This file is part of the go-ethereum library.
+//
+// The go-ethereum library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The go-ethereum library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+
 package functional_test
 
 import (
@@ -35,7 +53,7 @@ var _ = Describe("Block synchronization testing", func() {
 		vaultNetwork.Finalize()
 	})
 
-	Describe("QFS-06: Block synchronization testing", func() {
+	Describe("SFS-06: Block synchronization testing", func() {
 		const numberOfNodes = 2
 		var nodes []container.Ethereum
 
@@ -70,7 +88,7 @@ var _ = Describe("Block synchronization testing", func() {
 			}
 		})
 
-		It("QFS-06-01: Node connection", func(done Done) {
+		It("SFS-06-01: Node connection", func(done Done) {
 			By("Connect all nodes to the fullnodes", func() {
 				for _, n := range nodes {
 					for _, v := range blockchain.Fullnodes() {
@@ -89,7 +107,7 @@ var _ = Describe("Block synchronization testing", func() {
 			close(done)
 		}, 50)
 
-		It("QFS-06-02: Node synchronization", func(done Done) {
+		It("SFS-06-02: Node synchronization", func(done Done) {
 			const targetBlockHeight = 10
 
 			By("Wait for blocks", func() {

@@ -1,3 +1,21 @@
+// Copyright 2020 smilofoundation/regression Authors
+// Copyright 2019 smilofoundation/regression Authors
+// Copyright 2017 AMIS Technologies
+// This file is part of the go-ethereum library.
+//
+// The go-ethereum library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The go-ethereum library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+
 package functional_test
 
 import (
@@ -21,7 +39,7 @@ const (
 	testBaseByteCode = "0x6060604052341561000f57600080fd5b604051602080610149833981016040528080519060200190919050505b806000819055505b505b610104806100456000396000f30060606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680632a1afcd914605157806360fe47b11460775780636d4ce63c146097575b600080fd5b3415605b57600080fd5b606160bd565b6040518082815260200191505060405180910390f35b3415608157600080fd5b6095600480803590602001909190505060c3565b005b341560a157600080fd5b60a760ce565b6040518082815260200191505060405180910390f35b60005481565b806000819055505b50565b6000805490505b905600a165627a7a72305820278d34fe369cdf9e578c4d5cdbbdffa7e964a8e34060e68788e08e52c20181c10029"
 )
 
-var _ = Describe("QFS-08: Private transaction", func() {
+var _ = Describe("SFS-08: Private transaction", func() {
 	const (
 		numberOfFullnodes = 4
 	)

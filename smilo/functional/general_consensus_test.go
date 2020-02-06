@@ -1,3 +1,21 @@
+// Copyright 2020 smilofoundation/regression Authors
+// Copyright 2019 smilofoundation/regression Authors
+// Copyright 2017 AMIS Technologies
+// This file is part of the go-ethereum library.
+//
+// The go-ethereum library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The go-ethereum library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+
 package functional_test
 
 import (
@@ -18,7 +36,7 @@ import (
 	"go-smilo/src/blockchain/smilobft/core/types"
 )
 
-var _ = Describe("QFS-01: General consensus", func() {
+var _ = Describe("SFS-01: General consensus", func() {
 	const (
 		numberOfFullnodes = 4
 	)
@@ -41,7 +59,7 @@ var _ = Describe("QFS-01: General consensus", func() {
 		vaultNetwork.Finalize()
 	})
 
-	It("QFS-01-01, QFS-01-02: Blockchain initialization and run", func() {
+	It("SFS-01-01, SFS-01-02: Blockchain initialization and run", func() {
 		errc := make(chan error, len(blockchain.Fullnodes()))
 		valSet := make(map[common.Address]bool, numberOfFullnodes)
 		for _, geth := range blockchain.Fullnodes() {
@@ -108,7 +126,7 @@ var _ = Describe("QFS-01: General consensus", func() {
 		}
 	})
 
-	It("QFS-01-03: Peer connection", func(done Done) {
+	It("SFS-01-03: Peer connection", func(done Done) {
 		expectedPeerCount := len(blockchain.Fullnodes()) - 1
 		tests.WaitFor(blockchain.Fullnodes(), func(v container.Ethereum, wg *sync.WaitGroup) {
 			Expect(v.WaitForPeersConnected(expectedPeerCount)).To(BeNil())
@@ -118,7 +136,7 @@ var _ = Describe("QFS-01: General consensus", func() {
 		close(done)
 	}, 50)
 
-	It("QFS-01-04: Consensus progress", func(done Done) {
+	It("SFS-01-04: Consensus progress", func(done Done) {
 		const (
 			targetBlockHeight = 10
 			maxBlockPeriod    = 3
@@ -168,7 +186,7 @@ var _ = Describe("QFS-01: General consensus", func() {
 		close(done)
 	}, 60)
 
-	It("QFS-01-05: Round robin proposer selection", func(done Done) {
+	It("SFS-01-05: Round robin proposer selection", func(done Done) {
 		var (
 			timesOfBeSpeaker  = 3
 			targetBlockHeight = timesOfBeSpeaker * numberOfFullnodes
