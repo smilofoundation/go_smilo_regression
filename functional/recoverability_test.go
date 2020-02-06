@@ -43,7 +43,9 @@ var _ = Describe("TFS-03: Recoverability testing", func() {
 	)
 
 	BeforeEach(func() {
-		blockchain = container.NewDefaultBlockchain(dockerNetwork, numberOfFullnodes)
+		blockchain, err := container.NewDefaultBlockchain(dockerNetwork, numberOfFullnodes)
+		Expect(err).To(BeNil())
+		Expect(blockchain).ToNot(BeNil())
 		Expect(blockchain.Start(true)).To(BeNil())
 	})
 

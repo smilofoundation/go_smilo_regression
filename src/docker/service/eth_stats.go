@@ -21,18 +21,21 @@ package service
 import (
 	"bytes"
 	"fmt"
+	"regression/src/container"
 	"text/template"
 )
 
 type EthStats struct {
 	Secret string
 	IP     string
+	ImageName string
 }
 
 func NewEthStats(ip string, secret string) *EthStats {
 	return &EthStats{
 		IP:     ip,
 		Secret: secret,
+		ImageName: container.GetGoSmiloImage(),
 	}
 }
 
@@ -58,7 +61,7 @@ func (c EthStats) String() string {
 }
 
 var ethStatsTemplate = `eth-stats:
-    image: quay.io/smilo/go-smilo:latest
+    image: {{ .ImageName }}
     ports:
       - '3000:3000'
     environment:

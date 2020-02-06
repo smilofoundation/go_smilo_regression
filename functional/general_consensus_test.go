@@ -50,7 +50,9 @@ var _ = Describe("TFS-01: General consensus", func() {
 	)
 
 	BeforeEach(func() {
-		blockchain = container.NewDefaultBlockchain(dockerNetwork, numberOfFullnodes)
+		blockchain, err := container.NewDefaultBlockchain(dockerNetwork, numberOfFullnodes)
+		Expect(err).To(BeNil())
+		Expect(blockchain).ToNot(BeNil())
 		Expect(blockchain.Start(true)).To(BeNil())
 	})
 

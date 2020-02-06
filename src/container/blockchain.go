@@ -61,19 +61,26 @@ type Blockchain interface {
 	Finalize()
 }
 
-func NewBlockchain(network *DockerNetwork, numOfFullnodes int, options ...Option) (bc *blockchain) {
+func GetGoSmiloImage() string {
+	return "quay.io/smilo/go-smilo"
+}
+
+func GetVaultImage() string {
+	return "quay.io/smilo/smilo-blackbox"
+}
+func NewBlockchain(network *DockerNetwork, numOfFullnodes int, options ...Option) (bc *blockchain, err error) {
 	if network == nil {
-		log.Error("Docker network is required")
-		return nil
+		//log.Error("Docker network is required")
+		return nil, fmt.Errorf("Docker network is required")
 	}
 
 	bc = &blockchain{dockerNetwork: network, opts: options}
 
-	var err error
-	bc.dockerClient, err = client.NewEnvClient()
-	if err != nil {
-		log.Error("Failed to connect to Docker daemon", "err", err)
-		return nil
+	var err1 error
+	bc.dockerClient, err1 = client.NewEnvClient()
+	if err1 != nil {
+		//log.Error("Failed to connect to Docker daemon", "err", err)
+		return nil, fmt.Errorf("Failed to connect to Docker daemon %s", err1)
 	}
 
 	bc.opts = append(bc.opts, DockerNetworkName(bc.dockerNetwork.Name()))
@@ -81,14 +88,17 @@ func NewBlockchain(network *DockerNetwork, numOfFullnodes int, options ...Option
 	//Create accounts
 	bc.generateAccounts(numOfFullnodes)
 
-	bc.addFullnodes(numOfFullnodes)
-	return bc
+	if err1 = bc.addFullnodes(numOfFullnodes); err1 != nil {
+		//log.Error("Error creating fullnodes", "err", err1)
+		return nil, fmt.Errorf("Error creating fullnodes %s", err1)
+	}
+	return bc, nil
 }
 
-func NewDefaultBlockchain(network *DockerNetwork, numOfFullnodes int) (bc *blockchain) {
+func NewDefaultBlockchain(network *DockerNetwork, numOfFullnodes int) (bc *blockchain, err error) {
 	return NewBlockchain(network,
 		numOfFullnodes,
-		ImageRepository("quay.io/smilo/go-smilo"),
+		ImageRepository(GetGoSmiloImage()),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),
@@ -112,10 +122,10 @@ func NewDefaultBlockchain(network *DockerNetwork, numOfFullnodes int) (bc *block
 	)
 }
 
-func NewDefaultBlockchainWithFaulty(network *DockerNetwork, numOfNormal int, numOfFaulty int) (bc *blockchain) {
+func NewDefaultBlockchainWithFaulty(network *DockerNetwork, numOfNormal int, numOfFaulty int) (bc *blockchain, err error) {
 	if network == nil {
-		log.Error("Docker network is required")
-		return nil
+		//log.Error("Docker network is required")
+		return nil, fmt.Errorf("Docker network is required")
 	}
 
 	commonOpts := [...]Option{
@@ -140,26 +150,26 @@ func NewDefaultBlockchainWithFaulty(network *DockerNetwork, numOfNormal int, num
 		Logging(false)}
 	normalOpts := make([]Option, len(commonOpts), len(commonOpts)+2)
 	copy(normalOpts, commonOpts[:])
-	normalOpts = append(normalOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"))
+	normalOpts = append(normalOpts, ImageRepository(GetGoSmiloImage()), ImageTag("latest"))
 	faultyOpts := make([]Option, len(commonOpts), len(commonOpts)+3)
 	copy(faultyOpts, commonOpts[:])
-	faultyOpts = append(faultyOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"), FaultyMode(1))
+	faultyOpts = append(faultyOpts, ImageRepository(GetGoSmiloImage()), ImageTag("regression_test"), FaultyMode(1))
 
 	// New env client
 	bc = &blockchain{dockerNetwork: network}
-	var err error
-	bc.dockerClient, err = client.NewEnvClient()
-	if err != nil {
-		log.Error("Failed to connect to Docker daemon", "err", err)
-		return nil
+	var err1 error
+	bc.dockerClient, err1 = client.NewEnvClient()
+	if err1 != nil {
+		//log.Error("Failed to connect to Docker daemon", "err", err)
+		return nil, fmt.Errorf("Failed to connect to Docker daemon %s", err1)
 	}
 
 	totalNodes := numOfNormal + numOfFaulty
 
-	ips, err := bc.dockerNetwork.GetFreeIPAddrs(totalNodes)
-	if err != nil {
-		log.Error("Failed to get free ip addresses", "err", err)
-		return nil
+	ips, err1 := bc.dockerNetwork.GetFreeIPAddrs(totalNodes)
+	if err1 != nil {
+		//log.Error("Failed to get free ip addresses", "err", err)
+		return nil, fmt.Errorf("Failed to get free ip addresses %s", err1)
 	}
 
 	//Create accounts
@@ -169,28 +179,34 @@ func NewDefaultBlockchainWithFaulty(network *DockerNetwork, numOfNormal int, num
 	bc.setupGenesis(addrs)
 	// Create normal fullnodes
 	bc.opts = normalOpts
-	bc.setupFullnodes(ips[:numOfNormal], keys[:numOfNormal], 0, bc.opts...)
+	if err1 = bc.setupFullnodes(ips[:numOfNormal], keys[:numOfNormal], 0, bc.opts...); err1 != nil {
+		//log.Error("Error setting up normal fullnodes")
+		return nil, fmt.Errorf("Error setting up normal fullnodes %s", err1)
+	}
 	// Create faulty fullnodes
 	bc.opts = faultyOpts
-	bc.setupFullnodes(ips[numOfNormal:], keys[numOfNormal:], numOfNormal, bc.opts...)
-	return bc
+	if err1 = bc.setupFullnodes(ips[numOfNormal:], keys[numOfNormal:], numOfNormal, bc.opts...); err1 != nil {
+		//log.Error("Error setting up faulty fullnodes")
+		return nil, fmt.Errorf("Error setting up faulty fullnodes %s", err1)
+	}
+	return bc, nil
 }
 
-func NewSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork, options ...Option) (bc *blockchain) {
+func NewSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork, options ...Option) (bc *blockchain, err error) {
 	if network == nil {
-		log.Error("Docker network is required")
-		return nil
+		//log.Error("Docker network is required")
+		return nil, fmt.Errorf("Docker network is required")
 	}
 
 	bc = &blockchain{dockerNetwork: network, opts: options, isSmilo: true, vaultNetwork: ctn}
 	bc.opts = append(bc.opts, IsSmilo(true))
 	bc.opts = append(bc.opts, NoUSB())
 
-	var err error
-	bc.dockerClient, err = client.NewEnvClient()
-	if err != nil {
-		log.Error("Failed to connect to Docker daemon", "err", err)
-		return nil
+	var err1 error
+	bc.dockerClient, err1 = client.NewEnvClient()
+	if err1 != nil {
+		//log.Error("Failed to connect to Docker daemon", "err", err1)
+		return nil, fmt.Errorf("Failed to connect to Docker daemon %s", err1)
 	}
 
 	bc.opts = append(bc.opts, DockerNetworkName(bc.dockerNetwork.Name()))
@@ -198,14 +214,17 @@ func NewSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork, options ...Opt
 	//Create accounts
 	bc.generateAccounts(ctn.NumOfVaults())
 
-	bc.addFullnodes(ctn.NumOfVaults())
-	return bc
+	if err1 := bc.addFullnodes(ctn.NumOfVaults()); err1 != nil {
+		//log.Error("Error creating fullnodes", "err", err1)
+		return nil, fmt.Errorf("Error creating fullnodes %s", err1)
+	}
+	return bc, nil
 }
 
-func NewDefaultSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork) (bc *blockchain) {
+func NewDefaultSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork) (bc *blockchain, err error) {
 	return NewSmiloBlockchain(network,
 		ctn,
-		ImageRepository("quay.io/smilo/go-smilo"),
+		ImageRepository(GetGoSmiloImage()),
 		ImageTag("latest"),
 		DataDir("/data"),
 		WebSocket(),
@@ -229,10 +248,10 @@ func NewDefaultSmiloBlockchain(network *DockerNetwork, ctn VaultNetwork) (bc *bl
 	)
 }
 
-func NewDefaultSmiloBlockchainWithFaulty(network *DockerNetwork, ctn VaultNetwork, numOfNormal int, numOfFaulty int) (bc *blockchain) {
+func NewDefaultSmiloBlockchainWithFaulty(network *DockerNetwork, ctn VaultNetwork, numOfNormal int, numOfFaulty int) (bc *blockchain, err error) {
 	if network == nil {
-		log.Error("Docker network is required")
-		return nil
+		//log.Error("Docker network is required")
+		return nil, fmt.Errorf("Docker network is required")
 	}
 
 	commonOpts := [...]Option{
@@ -259,26 +278,26 @@ func NewDefaultSmiloBlockchainWithFaulty(network *DockerNetwork, ctn VaultNetwor
 	}
 	normalOpts := make([]Option, len(commonOpts), len(commonOpts)+2)
 	copy(normalOpts, commonOpts[:])
-	normalOpts = append(normalOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"))
+	normalOpts = append(normalOpts, ImageRepository(GetGoSmiloImage()), ImageTag("latest"))
 	faultyOpts := make([]Option, len(commonOpts), len(commonOpts)+3)
 	copy(faultyOpts, commonOpts[:])
-	faultyOpts = append(faultyOpts, ImageRepository("quay.io/smilo/go-smilo"), ImageTag("latest"), FaultyMode(1))
+	faultyOpts = append(faultyOpts, ImageRepository(GetGoSmiloImage()), ImageTag("regression_test"), FaultyMode(1))
 
 	// New env client
 	bc = &blockchain{dockerNetwork: network, isSmilo: true, vaultNetwork: ctn}
-	var err error
-	bc.dockerClient, err = client.NewEnvClient()
-	if err != nil {
-		log.Error("Failed to connect to Docker daemon", "err", err)
-		return nil
+	var err1 error
+	bc.dockerClient, err1 = client.NewEnvClient()
+	if err1 != nil {
+		//log.Error("Failed to connect to Docker daemon", "err", err1)
+		return nil, fmt.Errorf("Failed to connect to Docker daemon %s", err1)
 	}
 
 	totalNodes := numOfNormal + numOfFaulty
 
-	ips, err := bc.dockerNetwork.GetFreeIPAddrs(totalNodes)
-	if err != nil {
-		log.Error("Failed to get free ip addresses", "err", err)
-		return nil
+	ips, err1 := bc.dockerNetwork.GetFreeIPAddrs(totalNodes)
+	if err1 != nil {
+		//log.Error("Failed to get free ip addresses", "err", err1)
+		return nil, fmt.Errorf("Failed to get free ip addresses %s", err1)
 	}
 
 	//Create accounts
@@ -288,11 +307,17 @@ func NewDefaultSmiloBlockchainWithFaulty(network *DockerNetwork, ctn VaultNetwor
 	bc.setupGenesis(addrs)
 	// Create normal fullnodes
 	bc.opts = normalOpts
-	bc.setupFullnodes(ips[:numOfNormal], keys[:numOfNormal], 0, bc.opts...)
+	if err1 = bc.setupFullnodes(ips[:numOfNormal], keys[:numOfNormal], 0, bc.opts...); err1 != nil {
+		//log.Error("Error setting up normal fullnodes")
+		return nil, fmt.Errorf("Error setting up normal fullnodes %s", err1)
+	}
 	// Create faulty fullnodes
 	bc.opts = faultyOpts
-	bc.setupFullnodes(ips[numOfNormal:], keys[numOfNormal:], numOfNormal, bc.opts...)
-	return bc
+	if err1 = bc.setupFullnodes(ips[numOfNormal:], keys[numOfNormal:], numOfNormal, bc.opts...); err1 != nil {
+		//log.Error("Error setting up faulty fullnodes")
+		return nil, fmt.Errorf("Error setting up faulty fullnodes %s", err1)
+	}
+	return bc, nil
 }
 
 // ----------------------------------------------------------------------------
@@ -452,8 +477,9 @@ func (bc *blockchain) addFullnodes(numOfFullnodes int) error {
 	}
 	keys, _, addrs := smilocommon.GenerateKeys(numOfFullnodes)
 	bc.setupGenesis(addrs)
-	bc.setupFullnodes(ips, keys, 0, bc.opts...)
-
+	if err = bc.setupFullnodes(ips, keys, 0, bc.opts...); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -514,7 +540,7 @@ func (bc *blockchain) setupGenesis(addrs []common.Address) {
 }
 
 // Offset: offset is for account index offset
-func (bc *blockchain) setupFullnodes(ips []net.IP, keys []*ecdsa.PrivateKey, offset int, options ...Option) {
+func (bc *blockchain) setupFullnodes(ips []net.IP, keys []*ecdsa.PrivateKey, offset int, options ...Option) (error) {
 	for i := 0; i < len(keys); i++ {
 		var opts []Option
 		opts = append(opts, options...)
@@ -523,7 +549,7 @@ func (bc *blockchain) setupFullnodes(ips []net.IP, keys []*ecdsa.PrivateKey, off
 		dataDir, err := smilocommon.GenerateRandomDir()
 		if err != nil {
 			log.Error("Failed to create data dir", "dir", dataDir, "err", err)
-			return
+			return err
 		}
 		opts = append(opts, HostDataDir(dataDir))
 		opts = append(opts, HostWebSocketPort(freeport.GetPort()))
@@ -557,11 +583,12 @@ func (bc *blockchain) setupFullnodes(ips []net.IP, keys []*ecdsa.PrivateKey, off
 		err = geth.Init(bc.genesisFile)
 		if err != nil {
 			log.Error("Failed to init genesis", "file", bc.genesisFile, "err", err)
-			return
+			return err
 		}
 
 		bc.fullnodes = append(bc.fullnodes, geth)
 	}
+	return nil
 }
 
 func (bc *blockchain) start(fullnodes []Ethereum) error {
@@ -591,30 +618,32 @@ type VaultNetwork interface {
 	GetVault(int) Vault
 }
 
-func NewVaultNetwork(network *DockerNetwork, numOfFullnodes int, options ...VaultOption) (ctn *vaultNetwork) {
+func NewVaultNetwork(network *DockerNetwork, numOfFullnodes int, options ...VaultOption) (ctn *vaultNetwork, err error) {
 	if network == nil {
-		log.Error("Docker network is required")
-		return nil
+		//log.Error("Docker network is required")
+		return nil, fmt.Errorf("Docker network is required")
 	}
 	ctn = &vaultNetwork{dockerNetwork: network, opts: options}
 
-	var err error
-	ctn.dockerClient, err = client.NewEnvClient()
-	if err != nil {
-		log.Error("Failed to connect to Docker daemon", "err", err)
-		return nil
+	var err1 error
+	ctn.dockerClient, err1 = client.NewEnvClient()
+	if err1 != nil {
+		log.Error("Failed to connect to Docker daemon", "err", err1)
+		return nil, fmt.Errorf("Failed to connect to Docker daemon %s", err1)
 	}
 
 	ctn.opts = append(ctn.opts, CTDockerNetworkName(ctn.dockerNetwork.Name()))
 
-	ctn.setupVaults(numOfFullnodes)
-	return ctn
+	if err1 := ctn.setupVaults(numOfFullnodes); err1 != nil {
+		return nil, fmt.Errorf("Failed to setup vaults %s", err1)
+	}
+	return ctn, nil
 }
 
-func NewDefaultVaultNetwork(network *DockerNetwork, numOfFullnodes int) (ctn *vaultNetwork) {
+func NewDefaultVaultNetwork(network *DockerNetwork, numOfFullnodes int) (ctn *vaultNetwork, err error) {
 
 	return NewVaultNetwork(network, numOfFullnodes,
-		CTImageRepository("quay.io/smilo/smilo-blackbox"),
+		CTImageRepository(GetVaultImage()),
 		CTImageTag("latest"),
 		CTWorkDir("/ctdata"),
 		CTLogging(false),
@@ -624,7 +653,7 @@ func NewDefaultVaultNetwork(network *DockerNetwork, numOfFullnodes int) (ctn *va
 	)
 }
 
-func (ctn *vaultNetwork) setupVaults(numOfFullnodes int) {
+func (ctn *vaultNetwork) setupVaults(numOfFullnodes int) (error) {
 	// Create vaultsF
 	ips, ports := ctn.getFreeHosts(numOfFullnodes)
 	for i := 0; i < numOfFullnodes; i++ {
@@ -633,9 +662,12 @@ func (ctn *vaultNetwork) setupVaults(numOfFullnodes int) {
 		opts = append(opts, CTOtherNodes(othernodes))
 		ct := NewVault(ctn.dockerClient, opts...)
 		// Generate keys
-		ct.GenerateKey()
+		if _, err := ct.GenerateKey(); err != nil {
+			return err
+		}
 		ctn.vaults = append(ctn.vaults, ct)
 	}
+	return nil
 }
 
 func (ctn *vaultNetwork) Start() error {

@@ -21,6 +21,7 @@ package service
 import (
 	"bytes"
 	"fmt"
+	"go-smilo/src/blockchain/regression/src/container"
 	"text/template"
 )
 
@@ -34,6 +35,7 @@ type Fullnode struct {
 	IP          string
 	EthStats    string
 	Name        string
+	ImageName   string
 }
 
 func NewFullnode(identity int, genesis string, nodeKey string, staticNodes string, port int, rpcPort int, ethStats string, ip string) *Fullnode {
@@ -46,6 +48,7 @@ func NewFullnode(identity int, genesis string, nodeKey string, staticNodes strin
 		EthStats: ethStats,
 		IP:       ip,
 		Name:     fmt.Sprintf("fullnode-%v", identity),
+		ImageName: container.GetGoSmiloImage(),
 	}
 }
 
@@ -68,7 +71,7 @@ func (v Fullnode) String() string {
 
 var fullnodeTemplate = `{{ .Name }}:
     hostname: {{ .Name }}
-    image: quay.io/smilo/go-smilo:latest
+    image: {{ .ImageName }}
     ports:
       - '{{ .Port }}:30303'
       - '{{ .RPCPort }}:8545'

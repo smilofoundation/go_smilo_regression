@@ -197,6 +197,11 @@ func (ct *vault) GenerateKey() (localWorkDir string, err error) {
 		log.Error("Failed to generate working dir", "dir", ct.localWorkDir, "err", err)
 		return "", err
 	}
+	err = os.MkdirAll(filepath.Join(ct.localWorkDir, "keys"), 0700)
+	if err != nil {
+		log.Error("", "dir", filepath.Join(ct.localWorkDir, "keys"), "err", err)
+		return "", err
+	}
 
 	// Generate config file
 	configContent := fmt.Sprintf("socket=\"%s\"\npublickeys=[\"%s\"]\n",
@@ -213,8 +218,9 @@ func (ct *vault) GenerateKey() (localWorkDir string, err error) {
 	config := &container.Config{
 		Image: ct.Image(),
 		Cmd: []string{
-			"--generate-keys=" + ct.keyPath(""),
+			"--generate-keys=" + ct.keyName,
 		},
+		WorkingDir:ct.workDir,
 	}
 	hostConfig := &container.HostConfig{
 		Binds: binds,
@@ -260,7 +266,10 @@ func (ct *vault) GenerateKey() (localWorkDir string, err error) {
 
 	err = ct.client.ContainerKill(ctx1, id, "")
 	if err != nil {
-		log.Error("Failed to kill VAULT container", "err", err)
+		log.Info("VAULT container finished gracefully.", "err", err)
+	} else {
+		log.Error("VAULT container was killed, something seems wrong.")
+		return "", fmt.Errorf("VAULT killed unexpectedly id:%s", id)
 	}
 
 	ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
@@ -404,9 +413,9 @@ func (ct *vault) showLog(context context.Context) {
 
 func (ct *vault) keyPath(extension string) string {
 	if extension == "" {
-		return filepath.Join(ct.workDir, ct.keyName)
+		return filepath.Join(ct.workDir,"keys", ct.keyName)
 	} else {
-		return filepath.Join(ct.workDir, fmt.Sprintf("%s.%s", ct.keyName, extension))
+		return filepath.Join(ct.workDir,"keys", fmt.Sprintf("%s.%s", ct.keyName, extension))
 	}
 }
 

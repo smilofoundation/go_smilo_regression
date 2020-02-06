@@ -38,12 +38,17 @@ var _ = Describe("SFS-02: Dynamic fullnodes addition/removal testing", func() {
 	var (
 		vaultNetwork container.VaultNetwork
 		blockchain   container.Blockchain
+		err          error
 	)
 
 	BeforeEach(func() {
-		vaultNetwork = container.NewDefaultVaultNetwork(dockerNetwork, numberOfFullnodes)
+		vaultNetwork, err = container.NewDefaultVaultNetwork(dockerNetwork, numberOfFullnodes)
+		Expect(err).To(BeNil())
+		Expect(vaultNetwork).ToNot(BeNil())
 		Expect(vaultNetwork.Start()).To(BeNil())
-		blockchain = container.NewDefaultSmiloBlockchain(dockerNetwork, vaultNetwork)
+		blockchain, err = container.NewDefaultSmiloBlockchain(dockerNetwork, vaultNetwork)
+		Expect(err).To(BeNil())
+		Expect(blockchain).ToNot(BeNil())
 		Expect(blockchain.Start(true)).To(BeNil())
 	})
 

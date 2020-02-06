@@ -39,11 +39,16 @@ var _ = Describe("SFS-05: Byzantine Faulty", func() {
 		var (
 			vaultNetwork container.VaultNetwork
 			blockchain   container.Blockchain
+			err          error
 		)
 		BeforeEach(func() {
-			vaultNetwork = container.NewDefaultVaultNetwork(dockerNetwork, numberOfNormal+numberOfFaulty)
+			vaultNetwork, err = container.NewDefaultVaultNetwork(dockerNetwork, numberOfNormal+numberOfFaulty)
+			Expect(err).To(BeNil())
+			Expect(vaultNetwork).ToNot(BeNil())
 			Expect(vaultNetwork.Start()).To(BeNil())
-			blockchain = container.NewDefaultSmiloBlockchainWithFaulty(dockerNetwork, vaultNetwork, numberOfNormal, numberOfFaulty)
+			blockchain, err = container.NewDefaultSmiloBlockchainWithFaulty(dockerNetwork, vaultNetwork, numberOfNormal, numberOfFaulty)
+			Expect(err).To(BeNil())
+			Expect(blockchain).ToNot(BeNil())
 			Expect(blockchain.Start(true)).To(BeNil())
 		})
 
@@ -83,11 +88,16 @@ var _ = Describe("SFS-05: Byzantine Faulty", func() {
 		var (
 			vaultNetwork container.VaultNetwork
 			blockchain   container.Blockchain
+			err          error
 		)
 		BeforeEach(func() {
-			vaultNetwork = container.NewDefaultVaultNetwork(dockerNetwork, numberOfNormal+numberOfFaulty)
+			vaultNetwork, err = container.NewDefaultVaultNetwork(dockerNetwork, numberOfNormal+numberOfFaulty)
+			Expect(err).To(BeNil())
+			Expect(vaultNetwork).ToNot(BeNil())
 			Expect(vaultNetwork.Start()).To(BeNil())
-			blockchain = container.NewDefaultSmiloBlockchainWithFaulty(dockerNetwork, vaultNetwork, numberOfNormal, numberOfFaulty)
+			blockchain, err = container.NewDefaultSmiloBlockchainWithFaulty(dockerNetwork, vaultNetwork, numberOfNormal, numberOfFaulty)
+			Expect(err).To(BeNil())
+			Expect(blockchain).ToNot(BeNil())
 			Expect(blockchain.Start(true)).To(BeNil())
 		})
 

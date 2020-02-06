@@ -44,7 +44,9 @@ var _ = Describe("Block synchronization testing", func() {
 	)
 
 	BeforeEach(func() {
-		blockchain = container.NewDefaultBlockchain(dockerNetwork, numberOfFullnodes)
+		blockchain, err := container.NewDefaultBlockchain(dockerNetwork, numberOfFullnodes)
+		Expect(err).To(BeNil())
+		Expect(blockchain).ToNot(BeNil())
 		Expect(blockchain.Start(true)).To(BeNil())
 	})
 
@@ -64,7 +66,7 @@ var _ = Describe("Block synchronization testing", func() {
 			Expect(ok).To(BeTrue())
 
 			nodes, err = incubator.CreateNodes(numberOfNodes,
-				container.ImageRepository("quay.io/smilo/go-smilo"),
+				container.ImageRepository(container.GetGoSmiloImage()),
 				container.ImageTag("latest"),
 				container.DataDir("/data"),
 				container.WebSocket(),

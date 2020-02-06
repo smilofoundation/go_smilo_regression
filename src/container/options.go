@@ -284,7 +284,7 @@ func Verbosity(verbosity int) Option {
 
 func FaultyMode(mode int) Option {
 	return func(eth *ethereum) {
-		eth.flags = append(eth.flags, "--sport.faultymode")
+		eth.flags = append(eth.flags, "--smilobft.faultymode")
 		eth.flags = append(eth.flags, fmt.Sprintf("%d", mode))
 	}
 }
